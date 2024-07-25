@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'dart:async';
+import 'package:quiz/services/api_services.dart';
 
 class QuizController extends GetxController {
   var score = 0.obs;
@@ -16,6 +17,23 @@ class QuizController extends GetxController {
   void onInit() {
     super.onInit();
     startTimer();
+    getQuizQuestions();
+  }
+
+  Future<void> getQuizQuestions() async {
+    try {
+      var data = await ApiServices().Question(5);
+      if (data != null) {
+        questions.value = data;
+        isLoading.value = false;
+        shuffleAnswers(); // Shuffle answers initially
+        startTimer();
+      }
+    } catch (e) {
+      print("Error: $e");
+      isLoading.value = false;
+      Get.snackbar('Error', 'Failed to load questions');
+    }
   }
 
   void startTimer() {
@@ -42,6 +60,7 @@ class QuizController extends GetxController {
   void checkAnswer(String selectedAnswer, String correctAnswer) {
     this.selectedAnswer.value = selectedAnswer;
     this.correctAnswer.value = correctAnswer;
+
     if (selectedAnswer == correctAnswer) {
       increaseScore();
     }
